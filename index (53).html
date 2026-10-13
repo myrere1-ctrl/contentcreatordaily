@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Creator Content Engine</title>
+<!-- Deploy: simpan sebagai index.html di repo GitHub Pages. Jangan commit API key. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,500&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F2EC; --paper2:#EFE8DD; --ink:#23262B; --ink-soft:#5B5B58;
+    --teal:#2E8B84; --teal-deep:#1E6660; --blush:#E98C9B; --mustard:#E3A857;
+    --plum:#6B5B73; --line:#D9D0C0; --card:#FFFDFA;
+  }
+  :root:not([data-theme="light"]) { }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1B1C1F; --paper2:#242529; --ink:#EDE8E0; --ink-soft:#A9A49A;
+      --card:#232427; --line:#3A3B3E;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1B1C1F; --paper2:#242529; --ink:#EDE8E0; --ink-soft:#A9A49A;
+    --card:#232427; --line:#3A3B3E;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Work Sans',sans-serif; font-size:15px;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0 0 4px;}
+  .layout{display:flex; min-height:100vh;}
+  nav.side{
+    width:230px; flex-shrink:0; background:var(--paper2); border-right:1px solid var(--line);
+    padding:22px 14px; position:sticky; top:0; height:100vh; overflow-y:auto;
+  }
+  nav.side h1{font-size:20px; font-style:italic; font-weight:600; padding:0 8px 4px;}
+  nav.side .sub{font-size:11.5px; color:var(--ink-soft); padding:0 8px 20px; letter-spacing:.02em;}
+  .navgroup{margin-bottom:18px;}
+  .navlabel{font-size:11px; color:var(--ink-soft); padding:0 8px 6px;}
+  .navbtn{
+    display:flex; align-items:center; gap:9px; width:100%; text-align:left; background:none; border:none;
+    padding:9px 8px; border-radius:7px; font-family:inherit; font-size:14px; color:var(--ink); cursor:pointer;
+  }
+  .navbtn:hover{background:var(--card);}
+  .navbtn.active{background:var(--teal); color:#fff;}
+  main{flex:1; padding:26px 30px 60px; max-width:980px; min-width:0;}
+  .view{display:none;} .view.active{display:block;}
+  .topline{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:22px; flex-wrap:wrap; gap:8px;}
+  .topline h2{font-size:24px;}
+  .topline p{color:var(--ink-soft); margin:4px 0 0; font-size:13.5px;}
+  .stats{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:22px;}
+  .stat{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 18px; min-width:110px;}
+  .stat .n{font-family:'Fraunces',serif; font-size:28px;}
+  .stat .l{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .pillarrow{display:flex; align-items:center; gap:10px; padding:9px 4px; border-bottom:1px solid var(--line);}
+  .pillarrow:last-child{border-bottom:none;}
+  .pillarrow .em{font-size:18px; width:24px;}
+  .pillarrow .nm{flex:1; font-size:14px;}
+  .pillarrow .ct{font-family:'Fraunces',serif; font-size:16px; width:26px; text-align:right;}
+  .barwrap{background:var(--paper2); border-radius:4px; height:6px; flex:2; overflow:hidden; margin:0 6px;}
+  .bar{height:100%; background:var(--teal); border-radius:4px;}
+  .btn{
+    font-family:inherit; font-size:13.5px; font-weight:600; padding:10px 18px; border-radius:8px;
+    border:1px solid var(--ink); background:var(--ink); color:var(--paper); cursor:pointer;
+  }
+  .btn.ghost{background:transparent; color:var(--ink); border:1px solid var(--line);}
+  .btn.teal{background:var(--teal); border-color:var(--teal); color:#fff;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .btnrow{display:flex; gap:8px; flex-wrap:wrap;}
+  label.f{display:block; font-size:12.5px; color:var(--ink-soft); margin:14px 0 5px;}
+  input[type=text],input[type=number],textarea,select{
+    width:100%; font-family:inherit; font-size:14px; padding:9px 11px; border-radius:7px;
+    border:1px solid var(--line); background:var(--card); color:var(--ink);
+  }
+  textarea{resize:vertical; min-height:60px;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:0 20px;}
+  .chiprow{display:flex; gap:7px; flex-wrap:wrap; margin-top:6px;}
+  .chip{
+    font-size:12.5px; padding:6px 12px; border-radius:20px; border:1px solid var(--line);
+    background:var(--card); cursor:pointer; user-select:none;
+  }
+  .chip.on{background:var(--blush); border-color:var(--blush); color:#2b1418;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:15px 16px; margin-bottom:12px;}
+  .card .tag{
+    display:inline-block; font-size:11px; padding:3px 9px; border-radius:5px; background:var(--paper2); color:var(--ink-soft); margin-bottom:9px;
+  }
+  .card .body{font-size:14.5px; line-height:1.55; white-space:pre-wrap;}
+  .card textarea.editing{margin-top:9px;}
+  .cardfoot{display:flex; justify-content:space-between; align-items:center; margin-top:11px; gap:8px; flex-wrap:wrap;}
+  .cardfoot .stats2{font-size:12px; color:var(--ink-soft); display:flex; gap:10px;}
+  .miniBtns{display:flex; gap:6px; flex-wrap:wrap;}
+  .mini{font-size:11.5px; padding:5px 10px; border-radius:6px; border:1px solid var(--line); background:transparent; color:var(--ink-soft); cursor:pointer;}
+  .mini:hover{border-color:var(--ink);}
+  .empty{border:1px dashed var(--line); border-radius:10px; padding:34px 20px; text-align:center; color:var(--ink-soft); font-size:13.5px;}
+  .schedrow{display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--line);}
+  .schedrow:last-child{border-bottom:none;}
+  .time{font-family:'Fraunces',serif; font-size:14px; width:52px; flex-shrink:0; padding-top:2px;}
+  .schedcard{flex:1; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:13.5px;}
+  .schedcard .tag{font-size:10.5px;}
+  .note{font-size:12.5px;color:var(--ink-soft);margin:10px 0 0;min-height:18px;}
+  .note.err{color:#c0392b;}
+  .winnerbadge{color:var(--mustard); font-size:13px;}
+  ::selection{background:var(--blush); color:#2b1418;}
+  @media (max-width:760px){
+    .layout{flex-direction:column;}
+    nav.side{width:100%; height:auto; position:sticky; top:0; padding:14px; z-index:5;}
+    nav.side .navgroup{display:none;}
+    nav.side .navgroup.mobileflat{display:flex; gap:6px; overflow-x:auto; margin:0;}
+    nav.side .navgroup.mobileflat .navbtn{white-space:nowrap; flex-shrink:0;}
+    nav.side h1,nav.side .sub{padding:0 0 8px;}
+    main{padding:18px 16px 50px;}
+    .grid2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="side">
+    <h1>✨ Creator Engine</h1>
+    <div class="sub">Australia × Indonesia Lifestyle</div>
+    <div class="navgroup mobileflat" id="navMobile"></div>
+    <div class="navgroup" id="navMain">
+      <div class="navlabel">Workflow</div>
+      <button class="navbtn" data-v="dashboard">🏠 Dashboard</button>
+      <button class="navbtn" data-v="generate">💡 Ideas & Generate</button>
+      <button class="navbtn" data-v="schedule">📅 Scheduler</button>
+      <button class="navbtn" data-v="analytics">📊 Analytics</button>
+    </div>
+    <div class="navgroup">
+      <div class="navlabel">Creator</div>
+      <button class="navbtn" data-v="persona">👩 Persona</button>
+      <button class="navbtn" data-v="pillars">🎯 Content Pillars</button>
+      <button class="navbtn" data-v="settings">⚙️ Settings & API</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- DASHBOARD -->
+    <div class="view" id="v-dashboard">
+      <div class="topline">
+        <div><h2>Today</h2><p>Ringkasan konten hari ini</p></div>
+        <button class="btn teal" onclick="go('generate')">Generate 50 Posts</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Posts</div></div>
+        <div class="stat"><div class="n" id="statReady">0</div><div class="l">Ready</div></div>
+        <div class="stat"><div class="n" id="statDraft">0</div><div class="l">Draft</div></div>
+        <div class="stat"><div class="n" id="statSched">0</div><div class="l">Scheduled</div></div>
+      </div>
+      <h3 style="font-size:16px;margin-bottom:8px;">Content pillars</h3>
+      <div class="card" id="pillarSummary"></div>
+    </div>
+
+    <!-- PERSONA -->
+    <div class="view" id="v-persona">
+      <div class="topline"><div><h2>Persona</h2><p>Semua post akan terasa seperti satu orang yang sama.</p></div></div>
+      <div class="card">
+        <div class="grid2">
+          <div><label class="f">Nama</label><input type="text" id="pName"></div>
+          <div><label class="f">Umur</label><input type="text" id="pAge"></div>
+        </div>
+        <div class="grid2">
+          <div><label class="f">Latar belakang</label><input type="text" id="pBg"></div>
+          <div><label class="f">Lokasi</label><input type="text" id="pLoc"></div>
+        </div>
+        <label class="f">Kepribadian (pisahkan dengan koma)</label>
+        <textarea id="pTraits"></textarea>
+        <label class="f">Voice / gaya bahasa</label>
+        <textarea id="pVoice"></textarea>
+        <div class="btnrow" style="margin-top:14px;"><button class="btn" onclick="savePersona()">Simpan persona</button></div>
+      </div>
+    </div>
+
+    <!-- PILLARS -->
+    <div class="view" id="v-pillars">
+      <div class="topline"><div><h2>Content Pillars</h2><p>Atur porsi tiap kategori. Total menentukan jumlah post per generate.</p></div></div>
+      <div class="card" id="pillarEditor"></div>
+      <p style="color:var(--ink-soft);font-size:13px;margin-top:10px;">Total hari ini: <b id="pillarTotal">0</b> posts</p>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="view" id="v-settings">
+      <div class="topline"><div><h2>Settings & API</h2><p>Hubungkan Anthropic API supaya caption dibuat langsung oleh Claude.</p></div></div>
+      <div class="card">
+        <label class="f">Anthropic API Key</label>
+        <input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off">
+        <label class="f">Model</label>
+        <select id="apiModel">
+          <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (kualitas terbaik)</option>
+          <option value="claude-haiku-5-5">Claude Haiku 5.5 (lebih cepat & murah)</option>
+        </select>
+        <div class="grid2">
+          <div><label class="f">Caption minimal (kata)</label><input type="number" id="minW" min="5" max="200"></div>
+          <div><label class="f">Caption maksimal (kata)</label><input type="number" id="maxW" min="5" max="300"></div>
+        </div>
+        <div class="btnrow" style="margin-top:16px;">
+          <button class="btn teal" onclick="saveSettings()">Simpan</button>
+          <button class="btn ghost" onclick="testApi()">Tes koneksi</button>
+          <button class="btn ghost" onclick="clearKey()">Hapus key</button>
+        </div>
+        <div class="note" id="settingsStatus"></div>
+        <p class="note">API key hanya disimpan di browser kamu (localStorage) dan dikirim langsung ke api.anthropic.com. Jangan pernah menaruh key di dalam file yang di-commit ke GitHub. Tanpa API key, aplikasi memakai template lokal.</p>
+      </div>
+    </div>
+
+    <!-- GENERATE -->
+    <div class="view" id="v-generate">
+      <div class="topline"><div><h2>Ideas & Generate</h2><p>Dari beberapa ide, jadi puluhan post.</p></div></div>
+      <div class="card">
+        <label class="f">Core idea / tema hari ini (opsional — kosongkan untuk mode acak)</label>
+        <input type="text" id="coreIdea" placeholder="mis. gym, kopi Jepang, budaya Australia-Indonesia...">
+        <label class="f">Mood</label>
+        <div class="chiprow" id="moodChips"></div>
+        <div class="btnrow" style="margin-top:16px;">
+          <button class="btn teal" onclick="generatePosts()">Generate 50 Posts</button>
+          <button class="btn ghost" onclick="generatePosts(10)">Generate 10</button>
+          <button class="btn ghost" onclick="clearPosts()">Kosongkan</button>
+        </div>
+      </div>
+      <div class="note" id="genStatus"></div>
+      <div id="postList"></div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div class="view" id="v-schedule">
+      <div class="topline">
+        <div><h2>Scheduler</h2><p>Susun waktu posting otomatis.</p></div>
+        <button class="btn" onclick="autoSchedule()">Auto Schedule</button>
+      </div>
+      <div id="scheduleList"></div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="view" id="v-analytics">
+      <div class="topline">
+        <div><h2>Analytics</h2><p>Performa post & rekomendasi.</p></div>
+        <button class="btn" onclick="simulateAnalytics()">Simulasikan performa</button>
+      </div>
+      <div class="stats" id="weekStats"></div>
+      <h3 style="font-size:16px;margin:18px 0 8px;">Top performers</h3>
+      <div id="topPosts"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+const DEFAULT_PILLARS = [
+  {id:'daily',em:'☕',name:'Daily Life',count:10},
+  {id:'fitness',em:'🏋️',name:'Fitness',count:8},
+  {id:'food',em:'🍣',name:'Food',count:8},
+  {id:'japan',em:'🇯🇵',name:'Japan',count:7},
+  {id:'psych',em:'🧠',name:'Psychology',count:5},
+  {id:'affiliate',em:'🛍️',name:'Affiliate',count:5},
+  {id:'engagement',em:'💬',name:'Engagement',count:5},
+  {id:'personal',em:'❤️',name:'Personal',count:2},
+];
+const DEFAULT_PERSONA = {
+  name:'', age:'28', bg:'Australia × Indonesia', loc:'Australia',
+  traits:'Coffee lover, gym girl, healthy lifestyle, beach lover, Japan obsessed, psychology curious, content creator',
+  voice:'Casual, warm, funny, slightly cheeky, personal, conversational — not corporate, not "AI sounding".'
+};
+const MOODS = ['Funny','Relatable','Personal','Educational','Controversial','Inspirational'];
+
+// ---- Template bank: [format tag, template fn(core)] per pillar ----
+const BANK = {
+  daily: [
+    c=>`Morning routine lately: coffee first, decisions later ☕`,
+    c=>`Work from a cafe today because my apartment had main character energy and I did not.`,
+    c=>`Grocery run turned into a 40 minute debate with myself about ${c||'what to cook tonight'} 😂`,
+    c=>`Beach walk before the day gets loud. Non-negotiable.`,
+    c=>`Weekend plan: absolutely nothing, and I'm protecting it.`,
+    c=>`Living in Australia but still craving Indonesian food at 10pm.`,
+    c=>`Things I learned growing up between Australia and Indonesia…`,
+    c=>`Indonesian mum logic vs Australian logic 😂`,
+    c=>`Things Australians do that confused me growing up…`,
+    c=>`${c?c+'. ':''}Some days are just for slow mornings and good coffee.`,
+  ],
+  fitness:[
+    c=>`Went to the gym today even though my bed had a very convincing argument 😂`,
+    c=>`Started gym for ${c||'abs'}. Stayed because post-workout food tastes 10x better.`,
+    c=>`Nobody talks about the phase where you don't even know what half the machines do 😂`,
+    c=>`You don't need to love the gym. You just need to stop negotiating with yourself every morning.`,
+    c=>`Australian winter makes getting out of bed for the gym a completely different psychological battle.`,
+    c=>`The biggest change from going to the gym wasn't my body.`,
+    c=>`Protein, water, sleep. Everything else is a bonus.`,
+    c=>`Progress isn't the scale. It's carrying your own groceries without a break.`,
+  ],
+  food:[
+    c=>`Japan somehow makes walking 20,000 steps feel normal, mostly because of the food waiting at the end.`,
+    c=>`Indonesian food will always have a special place in my heart.`,
+    c=>`What I eat in a day: ${c||'nasi goreng, then something suspiciously Japanese for dinner'}.`,
+    c=>`Comparing Japanese and Indonesian breakfast and honestly, both win.`,
+    c=>`Found a place that does ${c||'katsu'} the way it's supposed to be done. Bookmarking forever.`,
+    c=>`Cooking ${c||'dinner'} tonight instead of ordering. Growth.`,
+    c=>`Snack drawer status: dangerously well stocked.`,
+    c=>`Restaurant recommendation nobody asked for but everyone needs.`,
+  ],
+  japan:[
+    c=>`Japan is dangerous for my bank account. Me: "I'll just get one coffee." Japan: "Here's another cafe you need to try."`,
+    c=>`Tokyo at 7am hits different. Quiet streets, loud vending machines.`,
+    c=>`Kyoto tip nobody tells you: go before 8am or don't go at all.`,
+    c=>`Osaka food tour, day 3, no regrets.`,
+    c=>`Things I'd tell first-time Japan travellers about ${c||'getting around'}.`,
+    c=>`Hidden gem alert: a tiny coffee shop I found wandering with no plan.`,
+    c=>`Japan culture note that changed how I travel: slow down, it's not a checklist.`,
+  ],
+  psych:[
+    c=>`Sometimes you're not actually lazy. You're just overwhelmed by the number of things you think you need to do. Start with one thing. Do you procrastinate more when you have too many things to do?`,
+    c=>`Funny how your reason for starting something can completely change once you get used to it.`,
+    c=>`What actually made you start ${c||'that habit you kept'}?`,
+    c=>`Boundaries aren't walls. They're just information about what you can actually give right now.`,
+    c=>`Confidence isn't feeling ready. It's doing it slightly scared anyway.`,
+    c=>`Overthinking is just your brain trying to protect you from an outcome that hasn't happened yet.`,
+  ],
+  affiliate:[
+    c=>`My gym bag used to be a complete disaster 😂 Water bottle. Headphones. Resistance bands. Random hair ties. I finally started keeping everything in one small organiser. Game changer.`,
+    c=>`3 things I actually use every week for ${c||'my routine'}…`,
+    c=>`Didn't think I needed this until I tried it. Now I recommend it to everyone.`,
+    c=>`The coffee setup that finally made my mornings feel worth it.`,
+    c=>`Travel essentials that earned a permanent spot in my bag.`,
+  ],
+  engagement:[
+    c=>`What actually made you start going to the gym?`,
+    c=>`Tell me yours: coffee or tea, no in-between.`,
+    c=>`Would you rather live near the beach or near the mountains?`,
+    c=>`Hot take: ${c||'rest days are productive days'}. Agree or disagree?`,
+    c=>`Unpopular opinion incoming about ${c||'morning routines'} — ready?`,
+  ],
+  personal:[
+    c=>`A random thought I had in the shower about ${c||'growing up between two cultures'}.`,
+    c=>`Not every post needs a lesson. Just documenting a good day.`,
+  ],
+};
+const FORMAT_LABELS = ['Story','Funny','Psychology','Question','Relatable','Hot Take','Culture','Personal'];
+
+// ---- expanders: turn a short hook into a ~60-word caption ----
+const MID = {
+  daily:[`It's funny how the small parts of the day end up mattering more than any of the big plans.`,`Some routines I build on purpose, some just happen because my body refuses to negotiate anymore.`],
+  fitness:[`It's never really about the workout, it's about proving I'll show up even when I don't feel like it.`,`Some days it's heavy weights and full focus, other days just walking through the door counts as a win.`],
+  food:[`There's something about the first bite that instantly tells you whether it's even worth finishing the plate.`,`Food has this way of pulling you straight back to a memory you didn't know you still had.`],
+  japan:[`Every trip back teaches me something new, even when I think I've already seen it all before.`,`There's a rhythm to how things work there that makes even ordinary moments feel oddly intentional.`],
+  psych:[`The more I notice patterns like this, the more it comes down to how safe we actually feel.`,`It's rarely about willpower, it's usually the story we've been quietly telling ourselves without noticing.`],
+  affiliate:[`It's not about needing more stuff, it's about finally having the right thing instead of ten wrong ones.`,`The difference isn't dramatic day to day, but it adds up faster than you'd expect.`],
+  engagement:[`I'm genuinely curious how different this looks for everyone, I don't think there's one right answer.`,`Feels like one of those things everyone has an opinion on but rarely says out loud.`],
+  personal:[`Not every moment needs a lesson, sometimes it's just worth writing down before the memory fades.`,`I keep coming back to these small, unremarkable moments more than any of the big ones.`],
+};
+const CLOSERS = {
+  question:[`What about you — where do you actually stand on this?`,`Curious how this shows up for you too.`,`Tell me I'm not the only one.`],
+  cta:[`Linking what I've been using below if you're curious.`,`Worth trying if you've kept putting it off.`],
+  reflective:[`Small thing, but it stuck with me today.`,`Just noting it before I forget.`,`Still thinking about that one.`],
+};
+function expandCaption(hook, pillarId, format){
+  const mid = pick(MID[pillarId]||MID.daily);
+  let closerPool = CLOSERS.reflective;
+  if(format==='Question') closerPool = CLOSERS.question;
+  else if(pillarId==='affiliate') closerPool = CLOSERS.cta;
+  const closer = pick(closerPool);
+  return `${hook} ${mid} ${closer}`;
+}
+
+// ---- state ----
+const CAP_VERSION = 3; // bump this to force-clear old captions from returning users
+let state = load();
+function load(){
+  try{
+    const raw = localStorage.getItem('cce_state');
+    if(raw){
+      const s = JSON.parse(raw);
+      if(s.capVersion !== CAP_VERSION){ s.posts = []; s.capVersion = CAP_VERSION; }
+      return s;
+    }
+  }catch(e){}
+  return {persona:{...DEFAULT_PERSONA}, pillars:JSON.parse(JSON.stringify(DEFAULT_PILLARS)), posts:[], moods:['Funny','Relatable','Personal'], capVersion:CAP_VERSION};
+}
+function save(){ try{ localStorage.setItem('cce_state', JSON.stringify(state)); }catch(e){} }
+
+// ---- nav ----
+const views = ['dashboard','persona','pillars','generate','schedule','analytics','settings'];
+function go(v){
+  views.forEach(x=>document.getElementById('v-'+x).classList.toggle('active', x===v));
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active', b.dataset.v===v));
+  if(v==='dashboard') renderDashboard();
+  if(v==='pillars') renderPillars();
+  if(v==='persona') renderPersona();
+  if(v==='generate') renderPosts();
+  if(v==='schedule') renderSchedule();
+  if(v==='analytics') renderAnalytics();
+  if(v==='settings') renderSettings();
+}
+function buildNav(){
+  const items = [
+    ['dashboard','🏠 Dashboard'],['generate','💡 Ideas & Generate'],['schedule','📅 Scheduler'],
+    ['analytics','📊 Analytics'],['persona','👩 Persona'],['pillars','🎯 Pillars'],['settings','⚙️ Settings']
+  ];
+  document.querySelectorAll('#navMain .navbtn, #navMobile').forEach(()=>{});
+  document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>go(b.dataset.v)));
+  const mob = document.getElementById('navMobile');
+  items.forEach(([v,label])=>{
+    const btn=document.createElement('button');
+    btn.className='navbtn'; btn.dataset.v=v; btn.textContent=label;
+    btn.addEventListener('click',()=>go(v));
+    mob.appendChild(btn);
+  });
+}
+
+// ---- persona ----
+function renderPersona(){
+  const p=state.persona;
+  pName.value=p.name; pAge.value=p.age; pBg.value=p.bg; pLoc.value=p.loc; pTraits.value=p.traits; pVoice.value=p.voice;
+}
+function savePersona(){
+  state.persona={name:pName.value,age:pAge.value,bg:pBg.value,loc:pLoc.value,traits:pTraits.value,voice:pVoice.value};
+  save();
+}
+
+// ---- pillars ----
+function renderPillars(){
+  const el=document.getElementById('pillarEditor'); el.innerHTML='';
+  state.pillars.forEach((pl,i)=>{
+    const row=document.createElement('div'); row.className='pillarrow';
+    row.innerHTML=`<span class="em">${pl.em}</span><span class="nm">${pl.name}</span>
+      <input type="number" min="0" max="30" value="${pl.count}" style="width:60px" data-i="${i}">`;
+    row.querySelector('input').addEventListener('input',e=>{
+      state.pillars[i].count = parseInt(e.target.value||0); save(); updatePillarTotal();
+    });
+    el.appendChild(row);
+  });
+  updatePillarTotal();
+}
+function updatePillarTotal(){
+  const t = state.pillars.reduce((s,p)=>s+p.count,0);
+  const el = document.getElementById('pillarTotal'); if(el) el.textContent=t;
+}
+
+// ---- dashboard ----
+function renderDashboard(){
+  statTotal.textContent = state.posts.length;
+  statReady.textContent = state.posts.filter(p=>p.status==='ready').length;
+  statDraft.textContent = state.posts.filter(p=>p.status==='draft').length;
+  statSched.textContent = state.posts.filter(p=>p.time).length;
+  const max = Math.max(...state.pillars.map(p=>p.count),1);
+  const el=document.getElementById('pillarSummary'); el.innerHTML='';
+  state.pillars.forEach(pl=>{
+    const row=document.createElement('div'); row.className='pillarrow';
+    row.innerHTML=`<span class="em">${pl.em}</span><span class="nm">${pl.name}</span>
+      <div class="barwrap"><div class="bar" style="width:${pl.count/max*100}%"></div></div>
+      <span class="ct">${pl.count}</span>`;
+    el.appendChild(row);
+  });
+}
+
+// ---- generate ----
+function renderMoodChips(){
+  const el=document.getElementById('moodChips'); el.innerHTML='';
+  MOODS.forEach(m=>{
+    const c=document.createElement('div'); c.className='chip'+(state.moods.includes(m)?' on':'');
+    c.textContent=m;
+    c.onclick=()=>{
+      const idx=state.moods.indexOf(m);
+      if(idx>-1) state.moods.splice(idx,1); else state.moods.push(m);
+      save(); renderMoodChips();
+    };
+    el.appendChild(c);
+  });
+}
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function genOne(pillarId, core){
+  const pl = state.pillars.find(p=>p.id===pillarId);
+  const bank = BANK[pillarId] || BANK.daily;
+  const tplFn = pick(bank);
+  let hook = tplFn(core);
+  const fmt = pick(FORMAT_LABELS);
+  let text = expandCaption(hook, pillarId, fmt);
+  return {id:'p'+Math.random().toString(36).slice(2,9), pillarId, pillar:pl.name, em:pl.em, format:fmt, body:text, status:'draft', time:null, views:null,likes:null,replies:null};
+}
+// ---- Anthropic API ----
+function settings(){
+  if(!state.settings) state.settings={key:'',model:'claude-sonnet-5-5',minW:20,maxW:40};
+  return state.settings;
+}
+function renderSettings(){
+  const s=settings();
+  apiKey.value=s.key; apiModel.value=s.model; minW.value=s.minW; maxW.value=s.maxW;
+}
+function saveSettings(){
+  state.settings={key:apiKey.value.trim(),model:apiModel.value,minW:parseInt(minW.value)||20,maxW:parseInt(maxW.value)||40};
+  save(); setNote('settingsStatus','Tersimpan.');
+}
+function clearKey(){ apiKey.value=''; settings().key=''; save(); setNote('settingsStatus','API key dihapus.'); }
+function setNote(id,msg,err){ const el=document.getElementById(id); if(el){ el.textContent=msg; el.classList.toggle('err',!!err); } }
+function systemPrompt(){
+  const p=state.persona, s=settings();
+  return `You write Threads posts for a social media creator persona.
+Persona: ${p.name||'a creator'}, age ${p.age}, ${p.bg}, based in ${p.loc}.
+Personality: ${p.traits}
+Voice: ${p.voice}
+Rules: write in English, first person, natural and conversational, like a real person typing on their phone. Avoid corporate or "AI sounding" phrasing, avoid hashtags, use emoji sparingly. Every caption must be between ${s.minW} and ${s.maxW} words. No two posts may share the same opening or the same idea. Affiliate posts must follow problem, personal experience, product, soft CTA (never "buy this now").`;
+}
+async function callClaude(prompt, maxTokens){
+  const s=settings();
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':s.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:s.model,max_tokens:maxTokens,system:systemPrompt(),messages:[{role:'user',content:prompt}]})
+  });
+  if(!r.ok){ const t=await r.text(); throw new Error(r.status+' '+t.slice(0,160)); }
+  const d=await r.json();
+  return d.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+}
+function parseJSONArray(txt){
+  const a=txt.indexOf('['), b=txt.lastIndexOf(']');
+  if(a<0||b<0) throw new Error('Respons bukan JSON');
+  return JSON.parse(txt.slice(a,b+1));
+}
+async function testApi(){
+  saveSettings();
+  if(!settings().key){ setNote('settingsStatus','Isi API key dulu.',true); return; }
+  setNote('settingsStatus','Mengecek koneksi…');
+  try{ await callClaude('Reply with the single word: ok',20); setNote('settingsStatus','Koneksi berhasil.'); }
+  catch(e){ setNote('settingsStatus','Gagal: '+e.message,true); }
+}
+function newPost(pillarId, format, body){
+  const pl = state.pillars.find(p=>p.id===pillarId) || state.pillars[0];
+  return {id:'p'+Math.random().toString(36).slice(2,9), pillarId:pl.id, pillar:pl.name, em:pl.em, format:format||'Story', body, status:'draft', time:null, views:null,likes:null,replies:null};
+}
+let busy=false;
+async function generatePosts(limit){
+  if(busy) return;
+  const core = document.getElementById('coreIdea').value.trim();
+  let queue=[];
+  state.pillars.forEach(pl=>{ for(let i=0;i<pl.count;i++) queue.push(pl.id); });
+  if(limit) queue = queue.slice(0,limit);
+  go('generate');
+  const useAI = !!settings().key;
+  if(useAI){
+    busy=true; setNote('genStatus','Claude sedang menulis '+queue.length+' post…');
+    const counts={}; queue.forEach(id=>counts[id]=(counts[id]||0)+1);
+    const plan=Object.entries(counts).map(([id,n])=>{ const pl=state.pillars.find(p=>p.id===id); return `- ${id} (${pl.name}): ${n} posts`; }).join('\n');
+    const prompt=`Write exactly ${queue.length} Threads posts with this pillar distribution:\n${plan}\n\nToday's theme / core idea: ${core||'free choice, keep it varied'}\nMoods to mix: ${state.moods.join(', ')||'relatable, personal'}\n\nReturn ONLY a JSON array with ${queue.length} objects shaped like {"pillar":"<pillar id>","format":"Story|Funny|Psychology|Question|Relatable|Hot Take|Culture|Personal","body":"<caption>"}. No commentary.`;
+    try{
+      const arr=parseJSONArray(await callClaude(prompt, 12000));
+      state.posts=arr.map(o=>newPost(o.pillar,o.format,String(o.body||'').trim())).filter(p=>p.body);
+      setNote('genStatus','Selesai: '+state.posts.length+' post dari Claude.');
+    }catch(e){
+      state.posts=queue.map(id=>genOne(id,core));
+      setNote('genStatus','API gagal ('+e.message+'). Memakai template lokal.',true);
+    }
+    busy=false;
+  } else {
+    state.posts=queue.map(id=>genOne(id,core));
+    setNote('genStatus','Mode template lokal. Tambahkan API key di Settings untuk generate dengan Claude.');
+  }
+  save(); renderPosts(); renderDashboard();
+}
+function clearPosts(){ state.posts=[]; save(); renderPosts(); }
+function renderPosts(){
+  renderMoodChips();
+  const el=document.getElementById('postList'); el.innerHTML='';
+  if(!state.posts.length){ el.innerHTML='<div class="empty">Belum ada post. Tekan "Generate" untuk mulai.</div>'; return; }
+  state.posts.forEach(p=>{
+    const card=document.createElement('div'); card.className='card';
+    card.innerHTML=`<span class="tag">${p.em} ${p.pillar} · ${p.format}</span>
+      <div class="body">${p.body}</div>
+      <div class="cardfoot">
+        <div class="miniBtns">
+          <button class="mini" data-a="funnier">Make it funnier</button>
+          <button class="mini" data-a="short">Shorter</button>
+          <button class="mini" data-a="personal">More personal</button>
+          <button class="mini" data-a="regen">Regenerate</button>
+        </div>
+        <div class="btnrow">
+          <button class="mini" data-a="ready">${p.status==='ready'?'✓ Ready':'Mark ready'}</button>
+        </div>
+      </div>`;
+    card.querySelectorAll('.mini').forEach(btn=>{
+      btn.addEventListener('click',()=>handlePostAction(p.id, btn.dataset.a));
+    });
+    el.appendChild(card);
+  });
+}
+async function handlePostAction(id, action){
+  const p = state.posts.find(x=>x.id===id); if(!p) return;
+  if(action==='ready'){ p.status = p.status==='ready'?'draft':'ready'; save(); renderPosts(); renderDashboard(); return; }
+  const s=settings();
+  if(s.key && !busy){
+    const ins={
+      regen:`Write a completely new caption for the "${p.pillar}" pillar, format "${p.format}", with a different idea from the original.`,
+      short:`Rewrite it noticeably shorter (about half the length), same voice.`,
+      funnier:`Rewrite it to be funnier and a bit cheekier, same core idea.`,
+      personal:`Rewrite it to feel more personal, like a real moment from my own life.`
+    }[action];
+    busy=true; setNote('genStatus','Claude sedang menulis ulang…');
+    try{
+      const out=await callClaude(`Original caption (${p.pillar}, ${p.format}):\n${p.body}\n\n${ins}\nReturn only the caption text, nothing else.`,600);
+      p.body=out.trim().replace(/^["']|["']$/g,'');
+      setNote('genStatus','');
+    }catch(e){ setNote('genStatus','API gagal: '+e.message,true); }
+    busy=false; save(); renderPosts(); renderDashboard(); return;
+  }
+  if(action==='regen'){ Object.assign(p, genOne(p.pillarId, document.getElementById('coreIdea').value.trim())); }
+  else if(action==='short'){ p.body = p.body.split('.')[0]+(p.body.includes('.')?'.':''); }
+  else if(action==='funnier'){ p.body = p.body + ' 😂'; }
+  else if(action==='personal'){ p.body = 'Honestly — ' + p.body.charAt(0).toLowerCase()+p.body.slice(1); }
+  save(); renderPosts(); renderDashboard();
+}
+
+// ---- schedule ----
+function autoSchedule(){
+  const ready = state.posts;
+  if(!ready.length){ save(); renderSchedule(); return; }
+  let t = 7*60; // 07:00
+  const endT = 21*60;
+  const step = Math.max(8, Math.floor((endT-t)/ready.length));
+  ready.forEach(p=>{ p.time = minutesToTime(t); t += step; });
+  save(); renderSchedule(); renderDashboard();
+}
+function minutesToTime(m){ const h=Math.floor(m/60)%24, mm=m%60; return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0'); }
+function renderSchedule(){
+  const el=document.getElementById('scheduleList'); el.innerHTML='';
+  const scheduled = state.posts.filter(p=>p.time).sort((a,b)=>a.time.localeCompare(b.time));
+  if(!scheduled.length){ el.innerHTML='<div class="empty">Belum ada jadwal. Generate posts dulu, lalu tekan "Auto Schedule".</div>'; return; }
+  scheduled.forEach(p=>{
+    const row=document.createElement('div'); row.className='schedrow';
+    row.innerHTML=`<div class="time">${p.time}</div><div class="schedcard"><span class="tag">${p.em} ${p.pillar}</span><div>${p.body.split('\n')[0].slice(0,90)}${p.body.length>90?'…':''}</div></div>`;
+    el.appendChild(row);
+  });
+}
+
+// ---- analytics ----
+function simulateAnalytics(){
+  state.posts.forEach(p=>{
+    p.views = Math.floor(800 + Math.random()*Math.random()*40000);
+    p.likes = Math.floor(p.views*(0.01+Math.random()*0.06));
+    p.replies = Math.floor(p.likes*(0.03+Math.random()*0.15));
+  });
+  save(); renderAnalytics();
+}
+function renderAnalytics(){
+  const withData = state.posts.filter(p=>p.views!=null);
+  const el=document.getElementById('weekStats'); const top=document.getElementById('topPosts');
+  if(!withData.length){ el.innerHTML=''; top.innerHTML='<div class="empty">Tekan "Simulasikan performa" untuk melihat analitik.</div>'; return; }
+  const totalViews = withData.reduce((s,p)=>s+p.views,0);
+  const totalReplies = withData.reduce((s,p)=>s+p.replies,0);
+  const byPillar={};
+  withData.forEach(p=>{ byPillar[p.pillar]=(byPillar[p.pillar]||0)+p.views; });
+  const bestPillar = Object.entries(byPillar).sort((a,b)=>b[1]-a[1])[0];
+  el.innerHTML = `
+    <div class="stat"><div class="n">${withData.length}</div><div class="l">Posts</div></div>
+    <div class="stat"><div class="n">${(totalViews/1000).toFixed(1)}k</div><div class="l">Total views</div></div>
+    <div class="stat"><div class="n">${totalReplies}</div><div class="l">Replies</div></div>
+    <div class="stat"><div class="n" style="font-size:18px">${bestPillar?bestPillar[0]:'—'}</div><div class="l">Best category</div></div>`;
+  const sorted=[...withData].sort((a,b)=>b.views-a.views).slice(0,5);
+  top.innerHTML='';
+  sorted.forEach((p,i)=>{
+    const card=document.createElement('div'); card.className='card';
+    card.innerHTML=`<span class="tag">${p.em} ${p.pillar} · ${p.format}</span> ${i===0?'<span class="winnerbadge">🏆 Winner</span>':''}
+      <div class="body">${p.body}</div>
+      <div class="cardfoot">
+        <div class="stats2"><span>${p.views.toLocaleString()} views</span><span>${p.likes.toLocaleString()} likes</span><span>${p.replies} replies</span></div>
+        <button class="mini" data-id="${p.id}">Generate 20 like this</button>
+      </div>`;
+    card.querySelector('.mini').addEventListener('click',()=>generateLike(p.id));
+    top.appendChild(card);
+  });
+}
+async function generateLike(id){
+  const src = state.posts.find(p=>p.id===id); if(!src || busy) return;
+  go('generate');
+  let fresh=[];
+  if(settings().key){
+    busy=true; setNote('genStatus','Claude membuat 20 variasi dari post winner…');
+    try{
+      const prompt=`Winner caption (${src.pillar}, ${src.format}):\n${src.body}\n\nWrite 20 NEW captions that reuse its hook structure, topic area, length, tone, emotional trigger and CTA style, without copying its wording. Return ONLY a JSON array of 20 strings.`;
+      const arr=parseJSONArray(await callClaude(prompt,6000));
+      fresh=arr.map(t=>newPost(src.pillarId,src.format,String(t).trim())).filter(p=>p.body);
+      setNote('genStatus','20 variasi ditambahkan.');
+    }catch(e){ setNote('genStatus','API gagal ('+e.message+'). Memakai template lokal.',true); }
+    busy=false;
+  }
+  if(!fresh.length){ for(let i=0;i<20;i++) fresh.push(genOne(src.pillarId,'')); }
+  state.posts = state.posts.concat(fresh);
+  save(); renderPosts(); renderDashboard();
+}
+
+// ---- init ----
+buildNav();
+settings();
+if(!state.persona.traits) state.persona = {...DEFAULT_PERSONA};
+renderPersona(); renderPillars(); renderDashboard();
+go('dashboard');
+</script>
+</body>
+</html>
